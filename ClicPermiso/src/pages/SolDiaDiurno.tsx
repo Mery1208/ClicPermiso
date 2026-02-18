@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import InputCampo from '../components/forms/InputCampo';
 import SelectCampo from '../components/forms/SelectCampo';
 import '../components/forms/FormStyles.css';
+import { supabase } from '../supabase/client';
 
 const SolDiaDiurno = () => {
     //aqui pongo valores fijos que se usaran en el formulario padre
@@ -50,9 +51,8 @@ const SolDiaDiurno = () => {
     };
 
     //llevar del envío del formulario, lo que hace es validar el formulario y si no hay errores enviar los datos
-    const manejarEnvio = (e: React.FormEvent) => {
-        // e.preventDefault() evita que el formulario se envíe de forma predeterminada, ya que cuando haces click cambia 
-        // el valor de los inputs y se reinicia el formulario y react se peta
+    const manejarEnvio = async (e: React.FormEvent) => {
+        // e.preventDefault() evita que el formulario se envíe de forma predeterminada
         e.preventDefault();
 
         // Validación final antes de enviar
@@ -60,8 +60,37 @@ const SolDiaDiurno = () => {
 
         // si no hay errores envio los datos
         if (Object.keys(errores).length === 0) {
-            console.log("Datos enviados:", formData);
-            alert("Solicitud guardada correctamente");
+            try {
+                // Formatear fecha de dd/mm/yyyy a yyyy-mm-dd para que lo acepte la base de datos
+                const [dia, mes, ano] = formData.diaSolicitado.split('/');
+                const fechaParaBD = `${ano}-${mes}-${dia}`;
+
+                // Insertamos en Supabase en la tabla correspondiente
+                const { error } = await supabase
+                    .from('Tabla DiaSolicitado')
+                    .insert([
+                        {
+                            DiaSolicitado: fechaParaBD,
+                            telefono: formData.telefono,
+                            jornada: formData.jornada,
+                            turno: formData.turno,
+                            horas_afectadas: parseInt(formData.horasDocencia),
+                            dias_solicitados: parseInt(formData.diasPermisos)
+                        }
+                    ]);
+
+                if (error) throw error;
+
+                console.log("Datos enviados:", formData);
+                alert("Solicitud guardada correctamente");
+
+                // Limpiar formulario y volver
+                manejarCancelar();
+
+            } catch (err: any) {
+                console.error("Error al insertar:", err);
+                alert("Error al guardar la solicitud: " + err.message);
+            }
         } else {
             console.log("Errores en el formulario:", errores);
             alert("Por favor, corrija los errores del formulario");
