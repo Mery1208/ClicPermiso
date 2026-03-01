@@ -6,9 +6,9 @@ const MisAusencias = () => {
 
     return (
         <div className="max-w-7xl mx-auto p-8">
-            {/* Header Card */}
+            {/* Tarjeta principal */}
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                {/* Header Title & Back Button */}
+                {/* Título y botón Volver */}
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
                         Historial de Ausencias Justificadas
@@ -38,7 +38,7 @@ const MisAusencias = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {/* Example Row */}
+                            {/* Fila de ejemplo */}
                             <tr className="bg-white hover:bg-gray-50 transition-colors border-b border-gray-50">
                                 <td className="px-6 py-4 font-medium text-gray-900 text-center">
                                     14/01/2026 al 15/01/2026

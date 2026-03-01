@@ -26,7 +26,6 @@ export default function Login() {
     if (error) {
       alert(error.message)
     } else {
-      // siempre redirigir a sol-diurno tras autenticación o registro
       navigate('/sol-diurno')
     }
   }
