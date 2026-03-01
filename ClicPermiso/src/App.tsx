@@ -1,71 +1,51 @@
-// esto es lo principal de la app
-
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Layout from './components/layout/Layout';
-import AppRoutes from './routes/AppRoutes';
-import './index.css';
 import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import type { AuthChangeEvent } from '@supabase/supabase-js'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
 import { useAuthStore } from './store/authStore'
 import Login from './components/Login'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import Layout from './components/layout/Layout'
+import AppRoutes from './routes/AppRoutes'
+import './index.css'
 
-
-const Dashboard = () => {
-  const signOut = useAuthStore((state) => state.signOut)
-  
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    signOut()
-  }
-
-  return (
-    <div>
-      <h1>Bienvenido al Área Privada</h1>
-      <p>Solo puedes ver esto si estás logueado.</p>
-      <button onClick={handleLogout}>Cerrar Sesión</button>
-    </div>
-  )
-}
-
-function App() {
-
+export default function App() {
   const setSession = useAuthStore((state) => state.setSession)
 
   useEffect(() => {
-    // 1. Obtener sesión inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
       setSession(session)
     })
 
-    // 2. Escuchar cambios (login, logout, token refresh) en tiempo real
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setSession(session)
     })
 
     return () => subscription.unsubscribe()
-  }, [setSession])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <BrowserRouter>
       <Routes>
-        {/* Ruta Pública */}
+        {/* always send root to login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         <Route path="/login" element={<Login />} />
 
-        {/* Rutas Protegidas */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* Puedes agregar más rutas privadas aquí */}
+        <Route path="/*" element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="*" element={<AppRoutes />} />
+          </Route>
         </Route>
-        
-        {/* Redirección por defecto */}
-        <Route path="*" element={<Login />} />
+
+        {/* fallback, should not be reached */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   )
 }
-
-export default App;
 

@@ -1,5 +1,3 @@
-// pagina de dias solicitados
-
 const MisDiasSolicitados = () => {
     return (
         <div>

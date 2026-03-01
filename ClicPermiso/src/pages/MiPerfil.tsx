@@ -1,5 +1,3 @@
-// pagina del perfil
-
 const MiPerfil = () => {
     return (
         <div>

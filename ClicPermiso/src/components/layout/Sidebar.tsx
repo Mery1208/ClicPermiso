@@ -1,5 +1,3 @@
-// aqui he hecho el menu de la izquierda con los botones para ir a cada pagina
-
 import { NavLink } from 'react-router-dom';
 
 const menuItems = [

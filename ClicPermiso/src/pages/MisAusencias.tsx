@@ -1,5 +1,3 @@
-// pagina de ausencias
-
 const MisAusencias = () => {
     return (
         <div>

@@ -1,5 +1,3 @@
-// aqui estan las rutas de cada pagina, que enseño borja para conectar las páginas
-
 import { Routes, Route, Navigate } from 'react-router-dom';
 import SolDiaDiurno from '../pages/SolDiaDiurno';
 import SolDiaVespertino from '../pages/SolDiaVespertino';
