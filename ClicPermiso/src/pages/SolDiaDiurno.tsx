@@ -5,7 +5,6 @@ import '../components/forms/FormStyles.css';
 import { supabase } from '../supabase/client';
 
 const SolDiaDiurno = () => {
-    //aqui pongo valores fijos que se usaran en el formulario padre
     const [formData, setFormData] = useState({
         diaSolicitado: '',
         telefono: '',
@@ -16,12 +15,9 @@ const SolDiaDiurno = () => {
         permisoNoRetribuido: false
     });
 
-    //hacer el estado para la fecha formateada en el header
     const [fechaFormateada, setFechaFormateada] = useState('');
 
-    //uso el useEffect para que se actualice la fecha cada vez que cambia el valor de diaSolicitado
     useEffect(() => {
-        // aqui hago las regex para validar formato  de la fecha dd/mm/yyyy
         const regexFecha = /^(\d{2})\/(\d{2})\/(\d{4})$/;
 
         if (formData.diaSolicitado && regexFecha.test(formData.diaSolicitado)) {
@@ -36,14 +32,11 @@ const SolDiaDiurno = () => {
         }
     }, [formData.diaSolicitado]);
 
-    //Función genérica para actualizar el estado de inputs
-    // e es el evento que se produce al cambiar el valor del input
     const manejarCambio = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target;
         const name = target.name;
         const value = target.type === 'checkbox' ? (target as HTMLInputElement).checked : target.value;
 
-        //formData hace que se actualice el estado de los inputs, lo he llamado yo asi como lo hizo borja
         setFormData({
             ...formData,
             [name]: value
@@ -55,10 +48,8 @@ const SolDiaDiurno = () => {
         // e.preventDefault() evita que el formulario se envíe de forma predeterminada
         e.preventDefault();
 
-        // Validación final antes de enviar
         const errores = validarFormulario();
 
-        // si no hay errores envio los datos
         if (Object.keys(errores).length === 0) {
             try {
                 // Formatear fecha de dd/mm/yyyy a yyyy-mm-dd para que lo acepte la base de datos
@@ -97,39 +88,32 @@ const SolDiaDiurno = () => {
         }
     };
 
-    //ahora validaciones final del formulario completo
     const validarFormulario = () => {
         const errores: { [key: string]: string } = {};
 
-        // validación día solicitado (dd/mm/yyyy)
         const regexFecha = /^(\d{2})\/(\d{2})\/(\d{4})$/;
         if (!formData.diaSolicitado || !regexFecha.test(formData.diaSolicitado)) {
             errores.diaSolicitado = 'Formato inválido';
         }
 
-        // validación teléfono ( que debe empezar por 6,7,8,9 y tiene 9 dígitos)
         const regexTelefono = /^[6789]\d{8}$/;
         if (!formData.telefono || !regexTelefono.test(formData.telefono)) {
             errores.telefono = 'Teléfono inválido';
         }
 
-        // validación jornada
         if (!formData.jornada) {
             errores.jornada = 'Seleccione jornada';
         }
 
-        // validación turno
         if (!formData.turno) {
             errores.turno = 'Seleccione turno';
         }
 
-        // validación horas docencia ( tiene q ser mayor que 0 y menor que 8)
         const regexNumero = /^[1-7]$/;
         if (!formData.horasDocencia || !regexNumero.test(formData.horasDocencia)) {
             errores.horasDocencia = 'Número inválido';
         }
 
-        // validación de los días permisos ( tiene q ser mayor que 0 y menor q 8)
         if (!formData.diasPermisos || !regexNumero.test(formData.diasPermisos)) {
             errores.diasPermisos = 'Número inválido';
         }
@@ -137,7 +121,6 @@ const SolDiaDiurno = () => {
         return errores;
     };
 
-    // la funcion pa cancelar y limpiar el formulario
     const manejarCancelar = () => {
         setFormData({
             diaSolicitado: '',
@@ -150,7 +133,6 @@ const SolDiaDiurno = () => {
         });
     };
 
-    // aqui las opciones para los selects 
     const opcionesJornada = [
         { value: 'Completa', label: 'Completa' },
         { value: 'Parcial', label: 'Parcial' }
@@ -173,9 +155,7 @@ const SolDiaDiurno = () => {
             </div>
 
             <form onSubmit={manejarEnvio} className="solicitud-form">
-                {/* en la fila 1: Día Solicitado y Teléfono */}
-                <div className="form-row">
-                    {/* valida dd/mm/yyyy */}
+                            <div className="form-row">
                     <InputCampo
                         label="Día Solicitado"
                         type="text"
@@ -187,7 +167,6 @@ const SolDiaDiurno = () => {
                         placeholder="23/04/2026"
                     />
 
-                    {/* Teléfono - empieza por 6,7,8,9 y 9 caracteres */}
                     <InputCampo
                         label="Número de Teléfono"
                         type="text"
@@ -202,7 +181,6 @@ const SolDiaDiurno = () => {
 
                 {/* en la fila 2: Jornada y Turno */}
                 <div className="form-row">
-                    {/* Jornada , es Completa o Parcial */}
                     <SelectCampo
                         label="Jornada"
                         name="jornada"
@@ -213,7 +191,6 @@ const SolDiaDiurno = () => {
                         required={true}
                     />
 
-                    {/* Turno, es Diurno o Vespertino */}
                     <SelectCampo
                         label="Turno Solicitado"
                         name="turno"

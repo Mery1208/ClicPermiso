@@ -1,5 +1,3 @@
-// aqui junto el header y el sidebar y en medio pongo las paginas
-
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
