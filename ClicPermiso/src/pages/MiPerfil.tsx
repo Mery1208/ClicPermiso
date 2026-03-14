@@ -1,8 +1,9 @@
 // pagina del perfil
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InputCampo from '../components/forms/InputCampo';
 import SelectCampo from '../components/forms/SelectCampo';
+import { supabase } from '../supabase';
 
 const MiPerfil = () => {
     const navigate = useNavigate();
@@ -16,6 +17,45 @@ const MiPerfil = () => {
         haceSustitucion: false
     });
 
+    // Cargo datos del perfil del usuario actual al entrar, 
+    //uso el useEffect para que se cargue al entrar en la pagina
+    useEffect(() => {
+        const cargarPerfil = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (error) {
+                console.error('Error al cargar perfil:', error.message);
+                return;
+            }
+
+            if (data) {
+                // full_name puede ser "Nombre Apellido1 Apellido2", lo separo
+                const partes = (data.full_name || '').split(' ');
+                const nombre = partes[0] || '';
+                const apellidos = partes.slice(1).join(' ') || '';
+
+                setFormData(prev => ({
+                    ...prev,
+                    nombre,
+                    apellidos,
+                    email: data.email || user.email || '',
+                    dni: data.dni || '',
+                    relacion: data.relacion || '',
+                    anosServicio: data.anos_servicio?.toString() || '',
+                    haceSustitucion: data.hace_sustitucion || false,
+                }));
+            }
+        };
+        cargarPerfil();
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
@@ -26,10 +66,31 @@ const MiPerfil = () => {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Datos del formulario:', formData);
-        alert('Perfil actualizado correctamente (simulación)');
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const full_name = `${formData.nombre} ${formData.apellidos}`.trim();
+
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                full_name,
+                email: formData.email,
+                dni: formData.dni,
+                relacion: formData.relacion,
+                anos_servicio: formData.anosServicio ? parseInt(formData.anosServicio) : null,
+                hace_sustitucion: formData.haceSustitucion,
+            })
+            .eq('id', user.id);
+
+        if (error) {
+            alert('Error al guardar: ' + error.message);
+        } else {
+            alert('Perfil actualizado correctamente');
+        }
     };
 
     const handleCancel = () => {
