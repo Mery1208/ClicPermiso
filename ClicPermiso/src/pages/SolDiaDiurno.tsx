@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import InputCampo from '../components/forms/InputCampo';
 import SelectCampo from '../components/forms/SelectCampo';
 import '../components/forms/FormStyles.css';
-import { supabase } from '../supabase/client';
-
+import { useDataStore } from '../store/dataStore';
+import { useAuthStore } from '../store/authStore';
 const SolDiaDiurno = () => {
     const [formData, setFormData] = useState({
         diaSolicitado: '',
@@ -15,22 +15,23 @@ const SolDiaDiurno = () => {
         permisoNoRetribuido: false
     });
 
-    const [fechaFormateada, setFechaFormateada] = useState('');
+    const addSolicitud = useDataStore((state) => state.addSolicitud);
+    const user = useAuthStore((state) => state.user);
 
-    useEffect(() => {
+    const formatFecha = (fechaStr: string) => {
         const regexFecha = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-
-        if (formData.diaSolicitado && regexFecha.test(formData.diaSolicitado)) {
-            const [, dia, mes, ano] = formData.diaSolicitado.match(regexFecha)!;
+        if (fechaStr && regexFecha.test(fechaStr)) {
+            const [, dia, mes, ano] = fechaStr.match(regexFecha)!;
             const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
                 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
             ];
             const mesNombre = meses[parseInt(mes, 10) - 1];
-            setFechaFormateada(`${parseInt(dia, 10)} de ${mesNombre} de ${ano}`);
-        } else {
-            setFechaFormateada('');
+            return `${parseInt(dia, 10)} de ${mesNombre} de ${ano}`;
         }
-    }, [formData.diaSolicitado]);
+        return '';
+    };
+
+    const fechaFormateada = formatFecha(formData.diaSolicitado);
 
     const manejarCambio = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target;
@@ -56,21 +57,16 @@ const SolDiaDiurno = () => {
                 const [dia, mes, ano] = formData.diaSolicitado.split('/');
                 const fechaParaBD = `${ano}-${mes}-${dia}`;
 
-                // Insertamos en Supabase en la tabla correspondiente
-                const { error } = await supabase
-                    .from('Tabla DiaSolicitado')
-                    .insert([
-                        {
-                            DiaSolicitado: fechaParaBD,
-                            telefono: formData.telefono,
-                            jornada: formData.jornada,
-                            turno: formData.turno,
-                            horas_afectadas: parseInt(formData.horasDocencia),
-                            dias_solicitados: parseInt(formData.diasPermisos)
-                        }
-                    ]);
-
-                if (error) throw error;
+                // Insertamos en el store local (localStorage mock)
+                addSolicitud({
+                    DiaSolicitado: fechaParaBD,
+                    telefono: formData.telefono,
+                    jornada: formData.jornada,
+                    turno: formData.turno,
+                    horas_afectadas: parseInt(formData.horasDocencia),
+                    dias_solicitados: parseInt(formData.diasPermisos),
+                    userId: user?.id,
+                });
 
                 console.log("Datos enviados:", formData);
                 alert("Solicitud guardada correctamente");
@@ -78,9 +74,10 @@ const SolDiaDiurno = () => {
                 // Limpiar formulario y volver
                 manejarCancelar();
 
-            } catch (err: any) {
+            } catch (err: Error | unknown) {
                 console.error("Error al insertar:", err);
-                alert("Error al guardar la solicitud: " + err.message);
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                alert("Error al guardar la solicitud: " + errorMessage);
             }
         } else {
             console.log("Errores en el formulario:", errores);

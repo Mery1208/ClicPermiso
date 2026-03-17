@@ -1,12 +1,13 @@
 // aqui esta el header que sale arriba de la pagina
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabase';
+import { useAuthStore } from '../../store/authStore';
 
 const Header = () => {
     const navigate = useNavigate();
+    const signOut = useAuthStore((state) => state.signOut);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        signOut();
         navigate('/login');
     };
 

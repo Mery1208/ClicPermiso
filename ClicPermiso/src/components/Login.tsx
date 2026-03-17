@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../store/authStore'
 
 import './Login.css'
 
@@ -9,25 +9,25 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [isRegister, setIsRegister] = useState(false)
   const navigate = useNavigate()
+  const setUser = useAuthStore((state) => state.setUser)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    let error = null
-
-    if (isRegister) {
-      const result = await supabase.auth.signUp({ email, password })
-      error = result.error
-    } else {
-      const result = await supabase.auth.signInWithPassword({ email, password })
-      error = result.error
+    if (!email || !password) {
+      alert('Por favor ingrese email y contraseña')
+      return;
     }
 
-    if (error) {
-      alert(error.message)
-    } else {
-      navigate('/sol-diurno')
+    // Simulamos un login / registro local que siempre es exitoso 
+    // y guardamos el usuario en el store global
+    const mockUser = {
+      id: email, // Usamos el email como id para simplificar
+      email: email,
     }
+    
+    setUser(mockUser)
+    navigate('/sol-diurno')
   }
 
   return (

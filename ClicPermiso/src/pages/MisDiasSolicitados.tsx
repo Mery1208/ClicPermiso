@@ -1,37 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase/client';
+import { useDataStore } from '../store/dataStore';
 
 const MisDiasSolicitados = () => {
     const navigate = useNavigate();
-    const [solicitudes, setSolicitudes] = useState<any[]>([]);
+    const solicitudes = useDataStore((state) => state.solicitudes);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchSolicitudes();
-    }, []);
-
-    // funcion asincrona para pedir los datos a la base de datos
-    const fetchSolicitudes = async () => {
-        try {
-            setLoading(true);
-
-            // hago la consulta a Supabase y pillo todo
-            const { data, error } = await supabase
-                .from('Tabla DiaSolicitado')
-                .select('*');
-
-            if (error) throw error;
-
-            setSolicitudes(data || []);
-        } catch (err: any) {
-            setError(err.message);
-            console.error('Error al obtener solicitudes:', err);
-        } finally {
+        // Simulamos un leve retraso de carga
+        const timer = setTimeout(() => {
             setLoading(false);
-        }
-    };
+        }, 500);
+        return () => clearTimeout(timer);
+    }, []);
 
     return (
         <div className="max-w-7xl mx-auto p-8">
@@ -59,10 +41,6 @@ const MisDiasSolicitados = () => {
                     {loading ? (
                         <div className="flex justify-center items-center py-8">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        </div>
-                    ) : error ? (
-                        <div className="text-center text-red-500 py-8">
-                            Error al cargar solicitudes: {error}
                         </div>
                     ) : solicitudes.length === 0 ? (
                         <div className="text-center text-gray-500 py-8">

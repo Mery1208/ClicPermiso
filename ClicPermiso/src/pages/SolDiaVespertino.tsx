@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import InputCampo from '../components/forms/InputCampo';
 import SelectCampo from '../components/forms/SelectCampo';
 import '../components/forms/FormStyles.css';
@@ -14,22 +14,20 @@ const SolDiaNocturno = () => {
         permisoNoRetribuido: false
     });
 
-    const [fechaFormateada, setFechaFormateada] = useState('');
-
-    useEffect(() => {
+    const formatFecha = (fechaStr: string) => {
         const regexFecha = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-
-        if (formData.diaSolicitado && regexFecha.test(formData.diaSolicitado)) {
-            const [, dia, mes, ano] = formData.diaSolicitado.match(regexFecha)!;
+        if (fechaStr && regexFecha.test(fechaStr)) {
+            const [, dia, mes, ano] = fechaStr.match(regexFecha)!;
             const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
                 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
             ];
             const mesNombre = meses[parseInt(mes, 10) - 1];
-            setFechaFormateada(`${parseInt(dia, 10)} de ${mesNombre} de ${ano}`);
-        } else {
-            setFechaFormateada('');
+            return `${parseInt(dia, 10)} de ${mesNombre} de ${ano}`;
         }
-    }, [formData.diaSolicitado]);
+        return '';
+    };
+
+    const fechaFormateada = formatFecha(formData.diaSolicitado);
 
     const manejarCambio = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const target = e.target;
